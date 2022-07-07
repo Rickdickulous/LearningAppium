@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: CodeTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.009 s <<< FAILURE! - in CodeTest
+testSayHello  Time elapsed: 0.008 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <Hello world!!> but was: <Hello world!>
+	at CodeTest.testSayHello(CodeTest.java:10)
+
