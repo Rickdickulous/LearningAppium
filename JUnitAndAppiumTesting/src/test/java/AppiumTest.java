@@ -3,13 +3,18 @@ import io.appium.java_client.ios.IOSDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Interaction;
+import org.openqa.selenium.interactions.PointerInput;
+import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
 import java.time.Duration;
+import java.util.Arrays;
 
 
 public class AppiumTest {
@@ -17,6 +22,9 @@ public class AppiumTest {
     private static final String APPIUM = "http://localhost:4723/wd/hub";
 
     private IOSDriver driver;
+    Duration ten_sec_timeout = Duration.ofSeconds(10);
+    WebDriverWait wait;
+
 
     @BeforeEach
     public void testSetUp() throws Exception  {
@@ -35,6 +43,7 @@ public class AppiumTest {
         caps.setCapability("wdaStartupRetryInterval", "20000");
 
         driver = new IOSDriver(new URL(APPIUM), caps);
+        wait = new WebDriverWait(driver, ten_sec_timeout);
 
         System.out.println("driver initialized");
     }
@@ -48,10 +57,8 @@ public class AppiumTest {
     }
 
     @Test
-    public void test1() {
+    public void basicLogin() {
         System.out.println("Click Login Screen button");
-        Duration ten_sec_timeout = Duration.ofSeconds(10);
-        WebDriverWait wait = new WebDriverWait(driver, ten_sec_timeout);
 
         WebElement screen = wait.until(
                 ExpectedConditions.presenceOfElementLocated(
@@ -69,8 +76,10 @@ public class AppiumTest {
                 AppiumBy.accessibilityId("password"));
         password.sendKeys("mypassword");
 
-        try {Thread.sleep(1000);} catch (Exception ignore) {}
-        System.out.println(driver.getPageSource());
+        // get page source
+
+        // try {Thread.sleep(1000);} catch (Exception ignore) {}
+        // System.out.println(driver.getPageSource());
 
         System.out.println("Click Login button");
         WebElement login = driver.findElement(
@@ -78,13 +87,38 @@ public class AppiumTest {
         login.click();
 
         WebElement loginText = wait.until(
+
                 ExpectedConditions.presenceOfElementLocated(
                         AppiumBy.accessibilityId("You are logged in as alice")));
 
         assert(loginText.getText().contains("alice"));
     }
 
-    public void enterPassword() {
+    @Test
+    public void touchAndScrollActions() {
+        WebElement listDemoButton = wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.accessibilityId("List Demo")));
+        listDemoButton.click();
+
+        // create pointer object that simulates a finger touching the screen
+        wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.accessibilityId("Altostratus")));
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+
+        // build actions the finger takes
+        Interaction moveToStart = finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), 133, 544);
+        Interaction pressDown = finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg());
+        Interaction moveToEnd = finger.createPointerMove(Duration.ofMillis(750), PointerInput.Origin.viewport(), 146, 265);
+        Interaction liftFinger = finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg());
+
+        // build the sequence
+        Sequence swipe = new Sequence(finger, 0);
+        swipe.addAction(moveToStart);
+        swipe.addAction(pressDown);
+        swipe.addAction(moveToEnd);
+        swipe.addAction(liftFinger);
+
+        driver.perform(Arrays.asList(swipe));
+
+        driver.findElement(AppiumBy.accessibilityId("Stratus"));
 
     }
 
